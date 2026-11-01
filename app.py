@@ -77,8 +77,5 @@ if uploaded_file is not None:
         st.pyplot(fig)
         st.write("Target: 0 = Benign, 1 = Malignant")
 
-        # Show the comparison calculated from the original test split.
-        st.subheader("Original test-set comparison (all five models)")
-        st.dataframe(pd.read_csv("model_comparison.csv"), hide_index=True)
 else:
     st.write("Please upload the provided test_data.csv to see the results.")
