@@ -3,21 +3,19 @@ import streamlit as st
 import pandas as pd
 import joblib
 import matplotlib.pyplot as plt
-from pathlib import Path
 from sklearn.metrics import (accuracy_score, roc_auc_score, precision_score,
                              recall_score, f1_score, matthews_corrcoef,
                              ConfusionMatrixDisplay)
 
 st.title("Breast Cancer Classification - Model Comparison")
 st.write("This project compares five machine learning classification models.")
-st.info("Educational demonstration only. Not intended for medical diagnosis.")
 
 # File names of the five models saved during training.
 model_files = {
-    "Logistic Regression": "logistic.joblib",
-    "Decision Tree": "tree.joblib",
+    "Logistic Regression": "lr.joblib",
+    "Decision Tree": "dt.joblib",
     "KNN": "knn.joblib",
-    "Naive Bayes": "naive_bayes.joblib",
+    "Naive Bayes": "nb.joblib",
     "Support Vector Machine": "svm.joblib"
 }
 
@@ -46,10 +44,8 @@ if uploaded_file is not None:
         X_test = test_data[feature_names]
         y_test = test_data["target"]
 
-        # Load the model saved during training. No model.fit() here!
         model = joblib.load("model/" + model_files[model_name])
         predictions = model.predict(X_test)
-        # Most classifiers provide probabilities, but SVM can use decision scores.
         # Both are valid inputs for calculating ROC AUC.
         if hasattr(model, "predict_proba"):
             scores = model.predict_proba(X_test)[:, 1]
