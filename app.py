@@ -49,11 +49,18 @@ if uploaded_file is not None:
         # Load the model saved during training. No model.fit() here!
         model = joblib.load("model/" + model_files[model_name])
         predictions = model.predict(X_test)
-        probabilities = model.predict_proba(X_test)[:, 1]
+        # Most classifiers provide probabilities, but SVM can use decision scores.
+        # Both are valid inputs for calculating ROC AUC.
+        if hasattr(model, "predict_proba"):
+            scores = model.predict_proba(X_test)[:, 1]
+        elif hasattr(model, "decision_function"):
+            scores = model.decision_function(X_test)
+        else:
+            scores = None
 
         # Calculate the six required evaluation metrics.
         accuracy = accuracy_score(y_test, predictions)
-        auc = roc_auc_score(y_test, probabilities) if y_test.nunique() == 2 else None
+        auc = roc_auc_score(y_test, scores) if y_test.nunique() == 2 and scores is not None else None
         precision = precision_score(y_test, predictions, zero_division=0)
         recall = recall_score(y_test, predictions, zero_division=0)
         f1 = f1_score(y_test, predictions, zero_division=0)
@@ -63,7 +70,7 @@ if uploaded_file is not None:
         metrics = {"Accuracy": accuracy, "AUC": auc, "Precision": precision,
                    "Recall": recall, "F1": f1, "MCC": mcc}
         st.dataframe(pd.DataFrame({"Metric": list(metrics.keys()),
-                                   "Score": [round(v, 4) if v is not None else "N/A (one class)"
+                                   "Score": [round(v, 4) if v is not None else "N/A"
                                              for v in metrics.values()]}), hide_index=True)
 
         st.subheader("Confusion matrix")
